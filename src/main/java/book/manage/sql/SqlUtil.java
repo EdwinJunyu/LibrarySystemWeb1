@@ -1,11 +1,13 @@
 package book.manage.sql;
 
+import book.manage.mapper.BookMapper;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
 import java.io.IOException;
+import java.util.function.Consumer;
 
 public class SqlUtil {
     private SqlUtil(){}
@@ -18,7 +20,10 @@ public class SqlUtil {
             throw new RuntimeException(e);
         }
     }
-    public SqlSession getSession(){
-        return factory.openSession(true);
+    public static void doSqlWork(Consumer<BookMapper> consumer){
+        try(SqlSession sqlSession = factory.openSession(true)){
+            BookMapper bookMapper = sqlSession.getMapper(BookMapper.class);
+            consumer.accept(bookMapper);
+        }
     }
 }
