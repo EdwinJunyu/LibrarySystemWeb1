@@ -1,23 +1,13 @@
 package book.manage;
-
 import book.manage.entity.Book;
 import book.manage.entity.Student;
-import book.manage.mapper.BookMapper;
 import book.manage.sql.SqlUtil;
 import lombok.extern.java.Log;
 import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
-import org.apache.ibatis.session.defaults.DefaultSqlSessionFactory;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Scanner;
 import java.util.logging.LogManager;
 
-import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
 @Log
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -28,6 +18,10 @@ public class Main {
                 System.out.println("=================");
                 System.out.println("1.录入学生信息");
                 System.out.println("2.录入书籍信息");
+                System.out.println("3.添加借阅信息");
+                System.out.println("4.查看借阅信息");
+                System.out.println("5.查询学生信息");
+                System.out.println("6.查询书籍信息");
                 System.out.println("输入您想要执行的操作(输入其他任意数字推出)：");
                 int input;
                 try {
@@ -42,6 +36,18 @@ public class Main {
                         break;
                     case 2:
                         addBook(scanner);
+                        break;
+                    case 3:
+                        addBorrow(scanner);
+                        break;
+                    case 4:
+                        showBorrow();
+                        break;
+                    case 5:
+                        showStudent();
+                        break;
+                    case 6:
+                        showBook();
                         break;
                     default:
                         return;
@@ -82,6 +88,48 @@ public class Main {
                 System.out.println("书籍信息录入成功！");
                 log.info("新添加了一条学生信息：" + book);
         }else System.out.println("书籍信息录入失败，请重试！");
+        });
+    }
+
+    private static void addBorrow(Scanner scanner){
+        System.out.println("请输入书籍号：");
+        String a = scanner.nextLine();
+        int bid = Integer.parseInt(a);
+        System.out.println("请输入学号：");
+        String b = scanner.nextLine();
+        int sid = Integer.parseInt(b);
+        SqlUtil.doSqlWork(mapper -> mapper.addBorrow(sid, bid));
+    //        int i = mapper.addBorrow();
+    //        if (i > 0) {
+    //            System.out.println("书籍信息录入成功！");
+    //            log.info("新添加了一条学生信息：" + );
+    //    }else System.out.println("书籍信息录入失败，请重试！");
+    //});
+
+
+    }
+    private static void showBorrow(){
+        SqlUtil.doSqlWork(mapper -> {
+            mapper.getBorrowList().forEach(borrow ->{
+                System.out.println(borrow.getStudent().getName() + " -> " + borrow.getBook().getTitle());
+            });
+        });
+    }
+
+
+    private static void showStudent(){
+        SqlUtil.doSqlWork(mapper -> {
+            mapper.getStudentList().forEach(student ->{
+                System.out.println(student.getSid() + "." + student.getName() + " " + student.getSex() + " " + student.getGrade() + "级");
+            });
+        });
+    }
+
+    private static void showBook(){
+        SqlUtil.doSqlWork(mapper -> {
+            mapper.getBookList().forEach(book ->{
+                System.out.println("书籍：" + book.getTitle() + " (ID -> " + book.getBid() + ")" + "  价格：" +book.getPrice() + "  简介：" + book.getDesc());
+            });
         });
     }
 }
