@@ -15,7 +15,7 @@ public class Main {
             LogManager manager = LogManager.getLogManager();
             manager.readConfiguration(Resources.getResourceAsStream("logging.properties"));
             while(true){
-                System.out.println("=================");
+                System.out.println("=====================");
                 System.out.println("1.录入学生信息");
                 System.out.println("2.录入书籍信息");
                 System.out.println("3.添加借阅信息");
@@ -74,39 +74,56 @@ public class Main {
     }
 
     private static void addBook(Scanner scanner){
-        System.out.println("请输入书籍标题：");
-        String title = scanner.nextLine();
-        System.out.println("请输入书籍介绍");
-        String desc = scanner.nextLine();
-        System.out.println("请输入书籍价格");
-        String price = scanner.nextLine();
-        double p = Double.parseDouble(price);
-        Book book = new Book(title, desc, p);
-        SqlUtil.doSqlWork(mapper -> {
-            int i = mapper.addBook(book);
-            if (i > 0) {
-                System.out.println("书籍信息录入成功！");
-                log.info("新添加了一条学生信息：" + book);
-        }else System.out.println("书籍信息录入失败，请重试！");
-        });
+        try {
+            System.out.println("请输入书籍标题：");
+            String title = scanner.nextLine();
+            System.out.println("请输入书籍介绍：");
+            String desc = scanner.nextLine();
+            System.out.println("请输入书籍价格：");
+            String price = scanner.nextLine();
+            double p = Double.parseDouble(price);
+            Book book = new Book(title, desc, p);
+
+            SqlUtil.doSqlWork(mapper -> {
+                try {
+                    int i = mapper.addBook(book);
+                    if (i > 0) {
+                        System.out.println("书籍信息录入成功！");
+                        log.info("新添加了一条学生信息：" + book);
+                    } else {
+                        System.out.println("书籍信息录入失败，请重试！");
+                    }
+                } catch (Exception e) {
+                    System.out.println("无法添加书籍信息，请重试!");
+                }
+            });
+        } catch (NumberFormatException e) {
+            System.out.println("输入的价格无效，请确保输入的是数字。");
+        }
     }
 
     private static void addBorrow(Scanner scanner){
-        System.out.println("请输入书籍号：");
-        String a = scanner.nextLine();
-        int bid = Integer.parseInt(a);
-        System.out.println("请输入学号：");
-        String b = scanner.nextLine();
-        int sid = Integer.parseInt(b);
-        SqlUtil.doSqlWork(mapper -> mapper.addBorrow(sid, bid));
-    //        int i = mapper.addBorrow();
-    //        if (i > 0) {
-    //            System.out.println("书籍信息录入成功！");
-    //            log.info("新添加了一条学生信息：" + );
-    //    }else System.out.println("书籍信息录入失败，请重试！");
-    //});
+        try {
+            System.out.println("请输入书籍号：");
+            String a = scanner.nextLine();
+            int bid = Integer.parseInt(a);
 
+            System.out.println("请输入学号：");
+            String b = scanner.nextLine();
+            int sid = Integer.parseInt(b);
 
+            SqlUtil.doSqlWork(mapper -> {
+                int i = mapper.addBorrow(sid, bid);
+                if (i > 0) {
+                    System.out.println("书籍信息录入成功！");
+                    log.info("新添加了一条借阅记录：[书籍号：" + bid + ", 学号：" + sid + "]");
+                } else {
+                    System.out.println("书籍信息录入失败，请重试！");
+                }
+            });
+        } catch (NumberFormatException e) {
+            System.out.println("输入的书籍号或学号无效，请确保输入的是数字。");
+        }
     }
     private static void showBorrow(){
         SqlUtil.doSqlWork(mapper -> {
@@ -133,12 +150,3 @@ public class Main {
         });
     }
 }
-
-
-
-
-//SqlSessionFactory factory = new SqlSessionFactoryBuilder().build(Resources.getResourceAsReader("mybatis-config.xml"));
-//try(SqlSession sqlSession = factory.openSession(true)){
-//    BookMapper mapper = sqlSession.getMapper(BookMapper.class);
-//    System.out.println(mapper.addBook (new Book(111, "Java", "测试", 10)));
-//}
